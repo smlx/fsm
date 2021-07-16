@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	invalidEvent fsm.Event = iota
+	_ fsm.Event = iota
 	pushOpen
 	pullShut
 )
 const (
-	invalidState fsm.State = iota
+	_ fsm.State = iota
 	opened
 	closed
 )
