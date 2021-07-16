@@ -1,6 +1,6 @@
 # Finite State Machine
 
-![Tag and Release](https://github.com/smlx/fsm/workflows/Tag%20and%20Release/badge.svg)
+![Tag Release](https://github.com/smlx/fsm/workflows/Tag%20Release/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/smlx/fsm/badge.svg?branch=main)](https://coveralls.io/github/smlx/fsm?branch=main)
 [![Go Reference](https://pkg.go.dev/badge/github.com/smlx/fsm.svg)](https://pkg.go.dev/github.com/smlx/fsm)
 
