@@ -57,14 +57,14 @@ func TestFSMClosure(t *testing.T) {
 	// can be closed over.
 	door.OnEntry = map[fsm.State][]fsm.TransitionFunc{
 		opened: {
-			func(e fsm.Event) error {
+			func(e fsm.Event, _ fsm.State) error {
 				fmt.Println(e)
 				openCount += door.increment
 				return nil
 			},
 		},
 		closed: {
-			func(e fsm.Event) error {
+			func(e fsm.Event, _ fsm.State) error {
 				fmt.Println(e)
 				closeCount += door.increment
 				return nil
@@ -73,7 +73,7 @@ func TestFSMClosure(t *testing.T) {
 	}
 	door.OnExit = map[fsm.State][]fsm.TransitionFunc{
 		opened: {
-			func(e fsm.Event) error {
+			func(e fsm.Event, _ fsm.State) error {
 				var i uint
 				for i = 0; i < door.increment; i++ {
 					fmt.Println("Slam!")
@@ -82,7 +82,7 @@ func TestFSMClosure(t *testing.T) {
 			},
 		},
 		closed: {
-			func(e fsm.Event) error {
+			func(e fsm.Event, _ fsm.State) error {
 				var i uint
 				for i = 0; i < door.increment; i++ {
 					fmt.Println("Creaaak!")
@@ -145,13 +145,19 @@ func TestFSMSimple(t *testing.T) {
 		},
 		OnEntry: map[fsm.State][]fsm.TransitionFunc{
 			opened: {
-				func(e fsm.Event) error {
+				func(e fsm.Event, s fsm.State) error {
+					if s != closed {
+						t.Fatalf("expected state: %v, got %v", closed, s)
+					}
 					fmt.Println(e)
 					return nil
 				},
 			},
 			closed: {
-				func(e fsm.Event) error {
+				func(e fsm.Event, s fsm.State) error {
+					if s != opened {
+						t.Fatalf("expected state: %v, got %v", closed, s)
+					}
 					fmt.Println(e)
 					return nil
 				},
@@ -159,13 +165,19 @@ func TestFSMSimple(t *testing.T) {
 		},
 		OnExit: map[fsm.State][]fsm.TransitionFunc{
 			opened: {
-				func(e fsm.Event) error {
+				func(e fsm.Event, s fsm.State) error {
+					if s != closed {
+						t.Fatalf("expected state: %v, got %v", closed, s)
+					}
 					fmt.Println("Slam!")
 					return nil
 				},
 			},
 			closed: {
-				func(e fsm.Event) error {
+				func(e fsm.Event, s fsm.State) error {
+					if s != opened {
+						t.Fatalf("expected state: %v, got %v", opened, s)
+					}
 					fmt.Println("Creaaak!")
 					return nil
 				},
