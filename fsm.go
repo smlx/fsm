@@ -21,7 +21,7 @@ type Transition struct {
 }
 
 // A TransitionFunc handles an event during a state transition.
-type TransitionFunc func(e Event) error
+type TransitionFunc func(Event, State) error
 
 // Machine represents a finite state machine (FSM).
 type Machine struct {
@@ -31,11 +31,13 @@ type Machine struct {
 	// Transition is a slice of possible transitions from state to state.
 	Transitions []Transition
 	// OnEntry is a way of hooking transitions between functions. Each
-	// func(Event) will be called just before the Machine enters the associated
-	// State.
+	// func(Event, State) will be called just before the Machine enters the
+	// associated State. The State passed to the TransitionFunc is the _source_
+	// state of the transition.
 	OnEntry map[State][]TransitionFunc
-	// OnExit works similarly to OnEntry. Each func(Event) will be called just
-	// before the Machine leaves the associated State.
+	// OnExit works similarly to OnEntry. Each func(Event, State) will be called
+	// just before the Machine leaves the associated State. The State passed to
+	// the TransitionFunc is the _destination_ state of the transition.
 	OnExit map[State][]TransitionFunc
 	// By default Occur() will return an UnexpectedEventError when an event
 	// occurs with no matching transition given the current state. If
@@ -46,18 +48,23 @@ type Machine struct {
 // Occur handles events which may cause a transition in the machine's state. It
 // handles synchronisation via an internal mutex, so is safe to call from
 // multiple goroutines.
+//
+// The order of operations is:
+// * OnExit functions of the source state.
+// * OnEntry functions of the destination state.
+// * Update Machine state.
 func (m *Machine) Occur(e Event) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, t := range m.Transitions {
 		if t.Event == e && t.Src == m.State {
 			for _, f := range m.OnExit[m.State] {
-				if err := f(e); err != nil {
+				if err := f(e, t.Dst); err != nil {
 					return err
 				}
 			}
 			for _, f := range m.OnEntry[t.Dst] {
-				if err := f(e); err != nil {
+				if err := f(e, m.State); err != nil {
 					return err
 				}
 			}
